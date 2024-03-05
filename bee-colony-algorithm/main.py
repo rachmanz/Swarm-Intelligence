@@ -1,30 +1,42 @@
-import random
-import numpy as np
+#---
+# Date : 06 March 2024 
+# Author : Abdurrahman Al-atsary 
+# Place : Institut Teknologi Sumatera
+#---
 
-random.seed(121450128)
 
-# Objective function
+# Library yang digunakan
+import random # Generate Random Number 
+import numpy as np # Proses Matematika dan rumus matematis 
+
+
+# Hasil random ditetapkan menjadi tetap
+random.seed(121450128) # Btw ini NIM saya :)
+
+# Fungsi objektif target yang harus dioptimalisasi
 def obj(x, y):
     return 19 + x * np.sin(x * np.pi) + (10 - y) * np.sin(y * np.pi)
 
-# Parameters
+# Parameter yang digunakan selama jalannya program (Dapat diubah)
 dim = 2
 num_scouts = 7
 max_iterations = 3
 num_onlookers = 7
 limit = 1
 
-# Initialize population
+# Insialisasi Populasi Awal dengan Constrain yang ada
 population = np.zeros((num_scouts, dim))
 population[:, 0] = np.random.uniform(-5, 9.8, num_scouts)
 population[:, 1] = np.random.uniform(0, 7.3, num_scouts)
 
+# Fungsi Fitness 
 def fitness(value):
     if value >= 0:
         return 1 / (1 + value)
     else:
         return 1 + abs(value)
 
+# Fungsi lebah pengintai
 def scout_bee(population, fitness_values, trials):
     for j in range(num_scouts):
         random_dim = random.sample([0, 1], 1)[0]
@@ -53,6 +65,7 @@ def scout_bee(population, fitness_values, trials):
             else:
                 trials[j] += 1
 
+# Fungsi Lebah Pengangguran 
 def onlooker_bee(population, fitness_values, trials):
     prob_fit = fitness_values / np.sum(fitness_values)
     num_recruited = 0
@@ -89,6 +102,7 @@ def onlooker_bee(population, fitness_values, trials):
                     else:
                         trials[j] += 1
 
+# Funsgi lebah operator pengintai
 def scout_bee_operator(population, fitness_values, trials):
     scouting = trials > limit
     for scout in range(len(scouting)):
@@ -98,9 +112,10 @@ def scout_bee_operator(population, fitness_values, trials):
             trials[scout] = 0
             fitness_values[scout] = fitness(obj(population[scout, 0], population[scout, 1]))
 
+# Fungsi mencetah hasil rapih
 def print_results(population, fitness_values, trials, iteration):
     print(f"\nIteration {iteration+1}")
-    print("FoodSource")
+    print("Food Source")
     print(np.round(population, 3))
     print("Fitness")
     print(np.round(fitness_values, 5))
@@ -115,6 +130,8 @@ def print_results(population, fitness_values, trials, iteration):
     print(f"Trialnya: {trials}")
     print(f"Sumber Makanan Terbaik Ada di: {best_index}")
 
+
+# Penerapan fungsi optimum Bee Colony (ABC)
 fitness_values = np.array([fitness(obj(x, y)) for x, y in population])
 trials = np.zeros(num_scouts)
 
@@ -125,4 +142,5 @@ for iteration in range(max_iterations):
     onlooker_bee(population, fitness_values, trials)
     scout_bee_operator(population, fitness_values, trials)
 
+# Mencetak hasil
 print_results(population, fitness_values, trials, max_iterations)
