@@ -9,9 +9,9 @@ def obj(x, y):
 
 # Parameters
 dim = 2
-num_scouts = 5
+num_scouts = 7
 max_iterations = 3
-num_onlookers = 5
+num_onlookers = 7
 limit = 1
 
 # Initialize population
