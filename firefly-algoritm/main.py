@@ -1,60 +1,50 @@
 import math
 import random
 
-def objective_function(solution, profit, weight, capacity):
-    total_profit = sum(x * y for x, y in zip(solution, profit))
-    total_weight = sum(x * y for x, y in zip(solution, weight))
-    if total_weight > capacity:
-        total_profit = 0
-    return total_profit
+# Fungsi Objektif (Ubah fungsi sesuai dengan soal Anda)
+def f(x):
+    return math.sqrt(x) + 12 + x**2 * math.sin(x) + 200*x
 
-def firefly_knp(profit, weight, capacity, a, b, gamma, generations, num_fireflies):
-    if len(profit) != len(weight):
-        return "Profit and weight vectors must have the same length."
+# Firefly Algorithm
+def firefly_algorithm(n, alpha, beta, gamma, max_iter, lb, ub):
+    # Inisalisasi yang digunakan
+    fireflies = [random.uniform(lb, ub) for _ in range (n)]
+    intensities = [f(x) for x in fireflies]
+    best_idx = intensities.index(min(intensities))
+    best_sol = fireflies[best_idx]
+    
+    for i in range(max_iter):
+        # Pindahkan kunang-kunang yang lebih terang
+        for j in range(n):
+            for k in range(n):
+                if intensities[k] < intensities[j]:
+                    r = math.sqrt((fireflies[j] - fireflies[k])**2)
+                    beta_r = beta * math.exp(-gamma * r**2)
+                    fireflies[j] = (1 - beta_r) * fireflies[j] + beta_r * fireflies[k] + alpha * (random.random() - 0.5)
+                    
+            # Evaluasi solusi baru
+            fireflies[j] = max(lb, min(ub, fireflies[j]))
+            intensities[j] = f(fireflies[j])
+            
+            # Update solusi terbaik
+            if intensities[j] < intensities[best_idx]:
+                best_idx = j
+                best_sol = fireflies[j]
+                
+        # Memunculkan proses iterasi dan hasil pada output
+        print(f"Iteration {i+1}: Best solution = {best_sol}, f({best_sol}) = {intensities[best_idx]}")
+        
+    return best_sol
 
-    num_items = len(profit)
-    capacities = [capacity] * num_fireflies
-    best_solutions = []
+# Parameter yang digunakan untuk solusi dari fungsi diatas (Dapat diubah disini)
+n = 6
+alpha = 0.5
+beta = 1
+gamma = 0.6
+max_iter = 2
+lb = 40
+ub = 220
 
-    # Initialize the first generation
-    solutions = [[random.randint(0, 1) for _ in range(num_items)] for _ in range(num_fireflies)]
-    objective_values = [objective_function(solution, profit, weight, capacity) for solution in solutions]
-
-    for generation in range(generations):
-        for i in range(num_fireflies):
-            for j in range(num_fireflies):
-                if objective_values[i] < objective_values[j]:
-                    distance = sum((solutions[j][k] - solutions[i][k]) ** 2 for k in range(num_items)) ** 0.5
-                    attraction = b * math.exp(-gamma * distance ** 2)
-                    for k in range(num_items):
-                        rand = random.random()
-                        new_value = round((solutions[i][k] + a * (solutions[j][k] - solutions[i][k]) + attraction * rand) % 2)
-                        solutions[i][k] = new_value
-
-        objective_values = [objective_function(solution, profit, weight, capacity) for solution in solutions]
-        best_index = objective_values.index(max(objective_values))
-        best_solution = (solutions[best_index], objective_values[best_index])
-        best_solutions.append(best_solution)
-
-    return best_solutions
-
-# Example usage
-profit = [4, 3, 1, 5, 7, 4]
-weight = [2, 1, 1, 6, 9, 6]
-capacity = 12
-a = 0.9
-b = 1.0
-gamma = 0.2
-generations = 2
-num_fireflies = 6
-
-best_solutions = firefly_knp(profit, weight, capacity, a, b, gamma, generations, num_fireflies)
-
-print("Best Solutions:")
-for iteration, solution in enumerate(best_solutions, start=1):
-    solution_vector, objective_value = solution
-    print(f"Iteration {iteration}:")
-    print(f"Weight: {sum(x * y for x, y in zip(solution_vector, weight))}")
-    print(f"Profit: {objective_value}")
-    print(f"Solution: {solution_vector}")
-    print()
+# Jalankan algoritma firefly
+best_solution = firefly_algorithm(n, alpha, beta, gamma, max_iter, lb, ub)
+print(f"\nBest solution found: x = {best_solution}, f(x) = {f(best_solution)}")
